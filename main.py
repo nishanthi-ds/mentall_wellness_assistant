@@ -1,4 +1,4 @@
-MISTRAL_API_KEY = "UCQISGNexbhV9n3bEfmu1U0M7pYpC2Xj"
+
 
 import pandas as pd
 import numpy as np
@@ -83,4 +83,5 @@ Answer in a kind, empathetic, and supportive way.
     return {"query": user_query, "retrieved": retrieved, "response": answer}
 
 answer= rag_query(user_query='im happy', top_k=2)
+
 print(answer)
