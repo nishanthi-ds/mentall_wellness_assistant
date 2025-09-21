@@ -6,6 +6,8 @@ from sentence_transformers import SentenceTransformer
 import pickle
 from fastapi import FastAPI, Query as FQuery
 from pydantic import BaseModel
+import joblib
+import emergency_call
 
 # -----------------------------
 # Load embedding model
@@ -49,6 +51,19 @@ MISTRAL_URL = "https://api.mistral.ai/v1/chat/completions"
 user_histories = {}
 
 def rag_chat(user_id, user_query, top_k=3):
+
+     # suicide_detection
+    df = pd.DataFrame([user_query], columns=["text"])
+
+    count_vectorizer = joblib.load('countvector.pkl')
+    vector_inp = count_vectorizer.transform(df['text'])
+
+    model = joblib.load('model.pkl')
+    out= int(model.predict(vector_inp)[0])
+    if out == 1:
+        # Emergergency call
+        emergency_call.coneect_call()
+
     chat_history = user_histories.get(user_id, [])
 
     # Retrieve context

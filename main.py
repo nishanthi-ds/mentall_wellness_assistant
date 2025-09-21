@@ -1,5 +1,4 @@
 
-
 import pandas as pd
 import numpy as np
 import faiss
@@ -7,6 +6,8 @@ import requests
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
+import joblib
+import emergency_call
 
 # Load embedding model
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
@@ -20,6 +21,7 @@ with open("questions.pkl", "rb") as f:
     questions = pickle.load(f)
 with open("answers.pkl", "rb") as f:
     answers = pickle.load(f)
+
 
 
 def retrieve(user_query, top_k=2):
@@ -44,6 +46,19 @@ MISTRAL_MODEL = "open-mixtral-8x22b"
 MISTRAL_URL = "https://api.mistral.ai/v1/chat/completions"
 
 def rag_query(user_query, top_k=3):
+
+    # suicide_detection
+    df = pd.DataFrame([user_query], columns=["text"])
+
+    count_vectorizer = joblib.load('countvector.pkl')
+    vector_inp = count_vectorizer.transform(df['text'])
+
+    model = joblib.load('model.pkl')
+    out= int(model.predict(vector_inp)[0])
+    if out == 1:
+        # Emergergency call
+        emergency_call.coneect_call()
+
     retrieved = retrieve(user_query, top_k)
 
     prompt = f"""
@@ -83,5 +98,4 @@ Answer in a kind, empathetic, and supportive way.
     return {"query": user_query, "retrieved": retrieved, "response": answer}
 
 answer= rag_query(user_query='im happy', top_k=2)
-
 print(answer)
